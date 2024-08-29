@@ -1,10 +1,12 @@
 import csv
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
+from typing import List
 
 import requests
 from bs4 import BeautifulSoup, Tag
 
 BASE_URL = "https://quotes.toscrape.com/"
+
 
 @dataclass
 class Quote:
@@ -38,17 +40,15 @@ def parse_quotes(url: str) -> list[Quote]:
     return all_quotes
 
 
-def create_csv(quotes: list[Quote], output_csv_path: str) -> None:
+def create_csv(quotes: List[Quote], output_csv_path: str) -> None:
     with open(output_csv_path, "w", newline="", encoding="utf-8") as csvfile:
         fieldnames = ["text", "author", "tags"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for quote in quotes:
-            writer.writerow({
-                "text": quote.text,
-                "author": quote.author,
-                "tags": ", ".join(quote.tags),
-            })
+            quote_dict = asdict(quote)
+            quote_dict["tags"] = str(quote_dict["tags"])
+            writer.writerow(quote_dict)
 
 
 def main(output_csv_path: str) -> None:
